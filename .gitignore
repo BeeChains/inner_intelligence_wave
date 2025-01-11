@@ -1,0 +1,18 @@
+# Ignore the .env file (contains sensitive information like API keys)
+.env
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore virtual environments
+venv/
+iwave-venv/
+
+# Ignore system-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore temporary or log files
+*.log
+*.tmp
