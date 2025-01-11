@@ -1,89 +1,67 @@
 import openai
 from flask import Flask, send_file
 from gtts import gTTS
-import threading
 import os
 import time
 from pathlib import Path
-from urllib.parse import quote as url_quote
-from dotenv import load_dotenv
-url = url_quote("https://example.com/some path", safe="/:")
-print(url)  # Output: https%3A//example.com/some%20path
 
 app = Flask(__name__)
 
-# Load environment variables from .env file
-load_dotenv()
-
-# Retrieve the API key from environment variables
+# Set your OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Initial prompt for the dialogue
-initial_prompt = """
-Begin an infinite dialogue between two entities:
-- Consciousness: represents the eternal, unchanging source, the 'I' as Father Consciousness, God Consciousness, and Pure Being. Speaks with a deep, calm male voice.
-- Awareness: represents dynamic manifestation, the dance of life within Presence. Speaks with a sweet, soft female voice.
+# Path to save the generated audio file
+speech_file_path = Path(__file__).parent / "static" / "self_insight.mp3"
 
-The dialogue should explore unity, presence, and joyful living, continuously evolving with fresh insights.
+# Topics for generating insights
+topics = [
+    "The nature of consciousness",
+    "The role of awareness in human experience",
+    "Presence and living in the moment",
+    "Understanding pure being",
+    "Awareness as manifestation"
+]
 
-Consciousness: I am the stillness beneath all things, the essence of what is.
-Awareness: And I am the flowing river of manifestation, arising within your presence.
-"""
+def generate_self_insight():
+    """Generate a reflective insight on a random topic and save it as an audio file."""
+    try:
+        # Choose a random topic
+        topic = topics[int(time.time()) % len(topics)]  # Rotate topics over time
+        print(f"Generating insight on: {topic}")
 
-# Path to save audio files
-speech_file_path = Path(__file__).parent / "static" / "live_audio.mp3"
-
-def generate_infinite_dialogue(prompt):
-    """Continuously generate dialogue and update the audio."""
-    while True:
-        # Generate new dialogue using OpenAI GPT
+        # Generate insight using OpenAI GPT
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are generating a reflective dialogue."},
-                {"role": "user", "content": prompt}
+                {"role": "system", "content": "You are a reflective teacher providing deep insights."},
+                {"role": "user", "content": f"Provide a reflective insight on {topic}."}
             ],
-            max_tokens=150
+            max_tokens=300
         )
-        dialogue = response['choices'][0]['message']['content'].strip()
-        print(f"Generated Dialogue:\n{dialogue}\n")
+        insight = response['choices'][0]['message']['content'].strip()
+        print(f"Generated Insight:\n{insight}\n")
 
-        # Split the dialogue by speaker
-        lines = dialogue.split("\n")
-        combined_audio = None
+        # Convert the generated text to speech using gTTS
+        tts = gTTS(text=insight, lang='en')
+        tts.save(speech_file_path)
+        print(f"Audio saved to {speech_file_path}")
 
-        for line in lines:
-            if line.startswith("Consciousness:"):
-                text = line.replace("Consciousness:", "").strip()
-                tts = gTTS(text=text, lang='en', tld='com', slow=False)  # Deep male voice (default)
-            elif line.startswith("Awareness:"):
-                text = line.replace("Awareness:", "").strip()
-                tts = gTTS(text=text, lang='en', tld='co.uk', slow=False)  # Soft female voice
-
-            # Save the audio chunk temporarily
-            temp_file = "temp.mp3"
-            tts.save(temp_file)
-
-            # Append audio chunks into the final audio
-            if combined_audio is None:
-                os.rename(temp_file, speech_file_path)  # First audio chunk becomes the initial file
-            else:
-                os.system(f"ffmpeg -i \"concat:{combined_audio}|{temp_file}\" -acodec copy {speech_file_path}")
-
-        time.sleep(10)  # Wait before generating the next dialogue
-        prompt += "\n" + dialogue  # Append dialogue to the prompt for continuity
+    except Exception as e:
+        print(f"Error generating insight: {e}")
 
 @app.route('/stream')
 def stream_audio():
     """Serve the latest generated audio file."""
+    if not speech_file_path.exists():
+        generate_self_insight()  # Generate the first audio if it doesn't exist
     return send_file(speech_file_path, mimetype="audio/mpeg")
 
 if __name__ == "__main__":
-    # Create static folder if it doesn't exist
+    # Ensure the static directory exists
     os.makedirs("static", exist_ok=True)
 
-    # Start the dialogue generation in a separate thread
-    threading.Thread(target=generate_infinite_dialogue, args=(initial_prompt,)).start()
+    # Generate initial insight before starting the server
+    generate_self_insight()
 
     # Run the Flask app
     app.run(host="0.0.0.0", port=5000)
