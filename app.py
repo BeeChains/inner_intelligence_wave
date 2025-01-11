@@ -6,6 +6,7 @@ import os
 import time
 from pathlib import Path
 from urllib.parse import quote as url_quote
+from werkzeug_legacy.urls import url_quote
 
 
 app = Flask(__name__)
