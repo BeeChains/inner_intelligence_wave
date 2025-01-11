@@ -6,12 +6,17 @@ import os
 import time
 from pathlib import Path
 from urllib.parse import quote as url_quote
+from dotenv import load_dotenv
 url = url_quote("https://example.com/some path", safe="/:")
 print(url)  # Output: https%3A//example.com/some%20path
 
 app = Flask(__name__)
 
-openai.api_key = "YOUR_OPENAI_API_KEY"
+# Load environment variables from .env file
+load_dotenv()
+
+# Retrieve the API key from environment variables
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Initial prompt for the dialogue
 initial_prompt = """
