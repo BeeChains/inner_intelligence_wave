@@ -6,7 +6,8 @@ import os
 import time
 from pathlib import Path
 from urllib.parse import quote as url_quote
-
+url = url_quote("https://example.com/some path", safe="/:")
+print(url)  # Output: https%3A//example.com/some%20path
 
 app = Flask(__name__)
 
