@@ -16,10 +16,11 @@ speech_file_path = Path(__file__).parent / "static" / "self_insight.mp3"
 # Topics for generating insights
 topics = [
     "The nature of consciousness",
-    "The role of awareness in human experience",
+    "I Am the door no man can shut",
     "Presence and living in the moment",
     "Understanding pure being",
-    "Awareness as manifestation"
+    "Awareness as manifestation",
+    "The inner 'I'"
 ]
 
 def generate_self_insight():
