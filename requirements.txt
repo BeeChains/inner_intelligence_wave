@@ -3,4 +3,3 @@ gTTS==2.2.3
 soundfile==0.12.1
 openai==0.27.0
 werkzeug>=2.0
-werkzeug-legacy
